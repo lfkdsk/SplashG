@@ -90,6 +90,35 @@ xcodebuild -project SplashG.xcodeproj -scheme SplashG \
 Dependencies (SPM, resolved automatically): [Yams](https://github.com/jpsim/Yams) for the
 YAML manifests, [Kingfisher](https://github.com/onevcat/Kingfisher) for image loading/caching.
 
+### Release signing / TestFlight
+
+Signing is configured for team `R6QM7B7GB7` (automatic, `ios/project.yml`).
+
+- **Run on your own device**: open the project in Xcode, pick your device, Run —
+  automatic signing registers the bundle id `org.lfkdsk.splashg` on first build.
+- **TestFlight / App Store**:
+  1. One-time: create the app record on [App Store Connect](https://appstoreconnect.apple.com)
+     (New App → bundle id `org.lfkdsk.splashg`).
+  2. Archive + upload, either from Xcode (Product → Archive → Distribute App), or CLI:
+
+     ```bash
+     cd ios && xcodegen generate
+     xcodebuild -project SplashG.xcodeproj -scheme SplashG -configuration Release \
+       -destination 'generic/platform=iOS' -archivePath build/SplashG.xcarchive \
+       archive -allowProvisioningUpdates
+     xcodebuild -exportArchive -archivePath build/SplashG.xcarchive \
+       -exportOptionsPlist ExportOptions.plist -exportPath build/export \
+       -allowProvisioningUpdates
+     ```
+
+     `ExportOptions.plist` uploads straight to App Store Connect; set its
+     `destination` to `export` if you just want an `.ipa`.
+  3. Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in `ios/project.yml`
+     for each release.
+
+The App Store icon lives at `ios/SplashG/Assets.xcassets/AppIcon.appiconset/icon-1024.png`
+(single-size, Xcode derives the rest).
+
 ## App structure
 
 - **Feed** — waterfall of photos from every album you or your followees published, newest album first.
