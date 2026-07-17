@@ -31,6 +31,7 @@ struct MainView: View {
     } ?? .feed
     @State private var showSearch = false
     @State private var showProfile = false
+    @State private var showDownloads = false
     @State private var detail: PhotoDetailContext?
 
     var body: some View {
@@ -56,6 +57,9 @@ struct MainView: View {
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
+        .sheet(isPresented: $showDownloads) {
+            DownloadsView()
+        }
         .fullScreenCover(item: $detail) { ctx in
             PhotoDetailView(photos: ctx.photos, initialIndex: ctx.index)
         }
@@ -80,6 +84,14 @@ struct MainView: View {
                     .padding(.leading, 8)
             }
             Spacer()
+            Button {
+                showDownloads = true
+            } label: {
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundStyle(Theme.subtle)
+            }
+            .padding(.trailing, 10)
             Button {
                 showProfile = true
             } label: {

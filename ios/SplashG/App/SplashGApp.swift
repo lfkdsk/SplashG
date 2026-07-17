@@ -5,6 +5,7 @@ import Kingfisher
 struct SplashGApp: App {
     @StateObject private var auth = AuthManager()
     @StateObject private var store = GalleryStore()
+    @StateObject private var downloads = DownloadManager()
 
     init() {
         // Gallery repos serve immutable image files off CDN — cache hard.
@@ -21,6 +22,7 @@ struct SplashGApp: App {
             RootView()
                 .environmentObject(auth)
                 .environmentObject(store)
+                .environmentObject(downloads)
                 .preferredColorScheme(.dark)
                 .tint(Theme.accent)
         }

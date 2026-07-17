@@ -2,14 +2,14 @@ import SwiftUI
 import Kingfisher
 
 /// Waterfall cell: cropped thumbnail with a floating download button,
-/// like the MyerSplash editor feed.
+/// like the MyerSplash editor feed. Downloads go to the in-app library
+/// (DownloadManager), not straight to the photo roll.
 struct PhotoCard: View {
     let photo: Photo
     var onTap: () -> Void
 
-    @State private var saveState: SaveState = .idle
-
-    enum SaveState { case idle, saving, done, failed }
+    @EnvironmentObject private var downloads: DownloadManager
+    @State private var failed = false
 
     var body: some View {
         Color.clear
@@ -32,29 +32,27 @@ struct PhotoCard: View {
 
     private var downloadButton: some View {
         Button {
-            guard saveState == .idle || saveState == .failed else { return }
-            saveState = .saving
+            guard !downloads.isDownloaded(photo), !downloads.isDownloading(photo) else { return }
+            failed = false
             Task {
-                do {
-                    try await ImageSaver.save(photo)
-                    saveState = .done
-                } catch {
-                    saveState = .failed
-                }
+                do { try await downloads.download(photo) } catch { failed = true }
             }
         } label: {
             Group {
-                switch saveState {
-                case .idle: Image(systemName: "arrow.down")
-                case .saving: ProgressView().controlSize(.mini)
-                case .done: Image(systemName: "checkmark")
-                case .failed: Image(systemName: "exclamationmark.triangle")
+                if downloads.isDownloaded(photo) {
+                    Image(systemName: "checkmark")
+                } else if downloads.isDownloading(photo) {
+                    ProgressView().controlSize(.mini)
+                } else if failed {
+                    Image(systemName: "exclamationmark.triangle")
+                } else {
+                    Image(systemName: "arrow.down")
                 }
             }
             .font(.system(size: 13, weight: .semibold))
             .frame(width: 32, height: 32)
             .background(Circle().fill(.ultraThinMaterial))
-            .foregroundStyle(saveState == .done ? Color.green : .white)
+            .foregroundStyle(downloads.isDownloaded(photo) ? Color.green : .white)
         }
         .padding(8)
     }

@@ -5,7 +5,8 @@ import Kingfisher
 struct PhotoDetailView: View {
     let photos: [Photo]
     @State private var index: Int
-    @State private var saveState: PhotoCard.SaveState = .idle
+    @State private var failed = false
+    @EnvironmentObject private var downloads: DownloadManager
     @Environment(\.dismiss) private var dismiss
 
     init(photos: [Photo], initialIndex: Int) {
@@ -55,7 +56,7 @@ struct PhotoDetailView: View {
             .padding(.top, 8)
         }
         .overlay(alignment: .bottom) { bottomBar }
-        .onChange(of: index) { saveState = .idle }
+        .onChange(of: index) { failed = false }
         .statusBarHidden()
     }
 
@@ -74,19 +75,24 @@ struct PhotoDetailView: View {
                 }
                 Spacer()
 
-                Button(action: save) {
+                Button {
+                    download(photo)
+                } label: {
                     Group {
-                        switch saveState {
-                        case .idle: Image(systemName: "arrow.down")
-                        case .saving: ProgressView().controlSize(.small)
-                        case .done: Image(systemName: "checkmark")
-                        case .failed: Image(systemName: "exclamationmark.triangle")
+                        if downloads.isDownloaded(photo) {
+                            Image(systemName: "checkmark")
+                        } else if downloads.isDownloading(photo) {
+                            ProgressView().controlSize(.small)
+                        } else if failed {
+                            Image(systemName: "exclamationmark.triangle")
+                        } else {
+                            Image(systemName: "arrow.down")
                         }
                     }
                     .font(.system(size: 16, weight: .semibold))
                     .frame(width: 42, height: 42)
                     .background(Circle().fill(.ultraThinMaterial))
-                    .foregroundStyle(saveState == .done ? Color.green : .white)
+                    .foregroundStyle(downloads.isDownloaded(photo) ? Color.green : .white)
                 }
 
                 ShareLink(item: photo.fullURL) {
@@ -108,16 +114,11 @@ struct PhotoDetailView: View {
         }
     }
 
-    private func save() {
-        guard let photo = current, saveState == .idle || saveState == .failed else { return }
-        saveState = .saving
+    private func download(_ photo: Photo) {
+        guard !downloads.isDownloaded(photo), !downloads.isDownloading(photo) else { return }
+        failed = false
         Task {
-            do {
-                try await ImageSaver.save(photo)
-                saveState = .done
-            } catch {
-                saveState = .failed
-            }
+            do { try await downloads.download(photo) } catch { failed = true }
         }
     }
 }
