@@ -61,6 +61,9 @@ targets:
         UIUserInterfaceStyle: Dark
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        # Portrait-only apps must declare full-screen, otherwise App Store
+        # validation warns about missing orientations.
+        UIRequiresFullScreen: true
         CFBundleURLTypes:
           - CFBundleURLName: org.lfkdsk.splashg.oauth
             CFBundleURLSchemes:
