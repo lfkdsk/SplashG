@@ -21,6 +21,18 @@ settings:
     DEVELOPMENT_TEAM: R6QM7B7GB7
     CODE_SIGN_STYLE: Automatic
 
+# Shared scheme — required by Xcode Cloud (user-auto-created schemes
+# aren't checked into the generated project).
+schemes:
+  SplashG:
+    build:
+      targets:
+        SplashG: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+
 targets:
   SplashG:
     type: application
