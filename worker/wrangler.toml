@@ -1,0 +1,26 @@
+# Cloudflare Worker config for splashg-data — the SplashG backend.
+# Sibling Worker to lfkdsk-auth / splitstupid-data in the same CF account.
+# Custom domain (e.g. api.splashg.lfkdsk.org) is set up via the CF
+# dashboard (Workers → this worker → Settings → Triggers → Routes).
+#
+# First-time setup:
+#   npx wrangler login
+#   npx wrangler d1 create splashg          # paste database_id below
+#   npm run db:init                          # apply migrations/0001_init.sql
+#   npx wrangler deploy
+
+name = "splashg-data"
+main = "src/index.ts"
+compatibility_date = "2025-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "splashg"
+# Paste the database_id from `npx wrangler d1 create splashg` here.
+database_id = "dfcc5b3b-021e-4584-9385-d7fd0ab52dbb"
+
+[vars]
+# Origins allowed to talk to this Worker (for a future web client; the
+# iOS app sends no Origin and is unaffected).
+ALLOWED_ORIGINS = "https://splashg.lfkdsk.org,http://localhost:5180"

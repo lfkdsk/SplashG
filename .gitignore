@@ -1,0 +1,19 @@
+# Node / Worker
+node_modules/
+.wrangler/
+.dev.vars
+*.log
+
+# Xcode / xcodegen (project is generated from ios/project.yml)
+ios/SplashG.xcodeproj/
+ios/build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.ipa
+*.dSYM
+*.dSYM.zip
+.swiftpm/
+
+# macOS
+.DS_Store
