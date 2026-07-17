@@ -14,8 +14,26 @@ final class AuthManager: ObservableObject {
     /// answer — the app stays usable, social features degrade.
     @Published var backendError: String?
     @Published var errorMessage: String?
+    /// True once the user finished (or skipped) the bind-your-repos step.
+    @Published var onboardingDone = false
 
     private let tokenKey = "gh_token"
+
+    private func onboardingKey(_ login: String) -> String { "onboardingDone.\(login)" }
+
+    func finishOnboarding() {
+        if let login = me?.login {
+            UserDefaults.standard.set(true, forKey: onboardingKey(login))
+        }
+        onboardingDone = true
+    }
+
+    /// Show onboarding only for a reachable backend, an empty profile, and
+    /// a user who hasn't been through it before.
+    var needsOnboarding: Bool {
+        guard let me, backendError == nil else { return false }
+        return me.repos.isEmpty && !onboardingDone
+    }
 
     // MARK: Boot
 
@@ -33,6 +51,9 @@ final class AuthManager: ObservableObject {
         do {
             me = try await SplashGAPI(token: token).me()
             backendError = nil
+            if let login = me?.login {
+                onboardingDone = UserDefaults.standard.bool(forKey: onboardingKey(login))
+            }
         } catch let err as APIError where err.status == 401 {
             // GitHub rejected the token — really signed out.
             signOut()

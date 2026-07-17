@@ -20,6 +20,14 @@ struct RootView: View {
                 }
             } else if auth.token == nil {
                 LoginView()
+            } else if auth.me == nil {
+                // Signed in, profile still loading.
+                ZStack {
+                    Theme.bg.ignoresSafeArea()
+                    ProgressView()
+                }
+            } else if auth.needsOnboarding {
+                OnboardingView()
             } else {
                 MainView()
             }
