@@ -68,3 +68,6 @@ targets:
         NSPhotoLibraryAddUsageDescription: "SplashG saves downloaded photos to your photo library."
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
+        # Standard HTTPS only — exempt from export compliance, skips the
+        # per-build encryption question on App Store Connect.
+        ITSAppUsesNonExemptEncryption: false
