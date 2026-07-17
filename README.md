@@ -119,6 +119,11 @@ Signing is configured for team `R6QM7B7GB7` (automatic, `ios/project.yml`).
 The App Store icon lives at `ios/SplashG/Assets.xcassets/AppIcon.appiconset/icon-1024.png`
 (single-size, Xcode derives the rest).
 
+**Xcode Cloud**: works out of the box — `ios/ci_scripts/ci_post_clone.sh` regenerates the
+project after clone and installs the pinned `ios/Package.resolved`. If you add or bump an
+SPM dependency, copy the refreshed resolved file back out:
+`cp ios/SplashG.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved ios/Package.resolved`.
+
 ## App structure
 
 - **Feed** — waterfall of photos from every album you or your followees published, newest album first.

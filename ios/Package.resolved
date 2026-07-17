@@ -1,0 +1,24 @@
+{
+  "originHash" : "0720b57da4a7f55d415feb657a07041c92b97e215bf28ce4ffc3a27b00fee678",
+  "pins" : [
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher",
+      "state" : {
+        "revision" : "ac632bd26a1c00f139ff62fd01806f21cf67325e",
+        "version" : "8.10.0"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams",
+      "state" : {
+        "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
+        "version" : "5.4.0"
+      }
+    }
+  ],
+  "version" : 3
+}
