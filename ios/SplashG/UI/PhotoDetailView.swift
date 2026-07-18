@@ -7,6 +7,7 @@ struct PhotoDetailView: View {
     @State private var index: Int
     @State private var failed = false
     @State private var dragOffset: CGFloat = 0
+    @State private var dragAxis: Axis?
     @State private var isZoomed = false
     @EnvironmentObject private var downloads: DownloadManager
     @Environment(\.dismiss) private var dismiss
@@ -48,13 +49,19 @@ struct PhotoDetailView: View {
                 .onChanged { value in
                     guard !isZoomed else { return }
                     let t = value.translation
-                    if dragOffset > 0 || (t.height > 0 && abs(t.height) > abs(t.width)) {
-                        dragOffset = max(0, t.height)
+                    // Lock the gesture's axis at first movement: a page
+                    // flip that drifts diagonally must never start
+                    // pulling the sheet down mid-swipe.
+                    if dragAxis == nil {
+                        dragAxis = t.height > abs(t.width) * 1.5 ? .vertical : .horizontal
                     }
+                    guard dragAxis == .vertical else { return }
+                    dragOffset = max(0, t.height)
                 }
                 .onEnded { value in
-                    guard !isZoomed else { return }
-                    if dragOffset > 140 || value.predictedEndTranslation.height > 320 {
+                    defer { dragAxis = nil }
+                    guard !isZoomed, dragAxis == .vertical else { return }
+                    if dragOffset > 140 || (dragOffset > 50 && value.predictedEndTranslation.height > 320) {
                         dismiss()
                     } else {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
