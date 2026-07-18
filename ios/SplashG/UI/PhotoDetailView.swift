@@ -6,6 +6,7 @@ struct PhotoDetailView: View {
     let photos: [Photo]
     @State private var index: Int
     @State private var failed = false
+    @State private var dragOffset: CGFloat = 0
     @EnvironmentObject private var downloads: DownloadManager
     @Environment(\.dismiss) private var dismiss
 
@@ -18,9 +19,14 @@ struct PhotoDetailView: View {
         photos.indices.contains(index) ? photos[index] : nil
     }
 
+    /// Fades chrome + background out as the sheet is pulled down.
+    private var dragProgress: CGFloat {
+        min(max(dragOffset / 300, 0), 1)
+    }
+
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.black.opacity(1 - Double(dragProgress) * 0.9).ignoresSafeArea()
 
             TabView(selection: $index) {
                 ForEach(Array(photos.enumerated()), id: \.element.id) { i, photo in
@@ -41,7 +47,30 @@ struct PhotoDetailView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
+            .offset(y: dragOffset)
+            .scaleEffect(1 - dragProgress * 0.12)
         }
+        .presentationBackground(.clear)
+        // Pull-down to close, Photos-style. simultaneousGesture so the
+        // pager keeps horizontal swipes; we only claim downward pulls.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 15)
+                .onChanged { value in
+                    let t = value.translation
+                    if dragOffset > 0 || (t.height > 0 && abs(t.height) > abs(t.width)) {
+                        dragOffset = max(0, t.height)
+                    }
+                }
+                .onEnded { value in
+                    if dragOffset > 140 || value.predictedEndTranslation.height > 320 {
+                        dismiss()
+                    } else {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
         .overlay(alignment: .topTrailing) {
             Button {
                 dismiss()
@@ -54,8 +83,12 @@ struct PhotoDetailView: View {
             }
             .padding(.trailing, 20)
             .padding(.top, 8)
+            .opacity(1 - Double(dragProgress) * 2)
         }
-        .overlay(alignment: .bottom) { bottomBar }
+        .overlay(alignment: .bottom) {
+            bottomBar
+                .opacity(1 - Double(dragProgress) * 2)
+        }
         .onChange(of: index) { failed = false }
         .statusBarHidden()
     }
