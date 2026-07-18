@@ -29,7 +29,9 @@ struct FeedView: View {
         }
         .contentMargins(.bottom, 96, for: .scrollContent)
         .refreshable {
-            if let token = auth.token {
+            if let demo = Config.demoRepo {
+                await store.refreshDemo(repo: demo)
+            } else if let token = auth.token {
                 await store.refresh(token: token)
             }
         }

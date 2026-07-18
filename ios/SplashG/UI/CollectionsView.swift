@@ -2,6 +2,7 @@ import SwiftUI
 import Kingfisher
 
 struct CollectionsView: View {
+    @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var store: GalleryStore
 
     var body: some View {
@@ -24,6 +25,13 @@ struct CollectionsView: View {
             .padding(.top, 4)
         }
         .contentMargins(.bottom, 96, for: .scrollContent)
+        .refreshable {
+            if let demo = Config.demoRepo {
+                await store.refreshDemo(repo: demo)
+            } else if let token = auth.token {
+                await store.refresh(token: token)
+            }
+        }
     }
 }
 

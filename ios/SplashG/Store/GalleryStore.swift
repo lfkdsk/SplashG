@@ -34,14 +34,32 @@ final class GalleryStore: ObservableObject {
 
     // MARK: Loading
 
+    private var inFlightRefresh: Task<Void, Never>?
+
     func refreshIfStale(token: String) async {
         if let last = lastRefresh, Date().timeIntervalSince(last) < 300, !galleries.isEmpty { return }
         await refresh(token: token)
     }
 
+    /// Deduplicates concurrent refreshes: a pull-to-refresh during an
+    /// ongoing load waits for that load instead of silently no-opping.
+    private func dedupe(_ work: @escaping () async -> Void) async {
+        if let existing = inFlightRefresh {
+            await existing.value
+            return
+        }
+        let task = Task { await work() }
+        inFlightRefresh = task
+        await task.value
+        inFlightRefresh = nil
+    }
+
     /// Demo mode: load one public repo unauthenticated, no backend.
     func refreshDemo(repo: String) async {
-        if loading { return }
+        await dedupe { await self.performRefreshDemo(repo: repo) }
+    }
+
+    private func performRefreshDemo(repo: String) async {
         loading = true
         defer { loading = false }
         let owner = repo.split(separator: "/").first.map(String.init) ?? repo
@@ -55,7 +73,10 @@ final class GalleryStore: ObservableObject {
     }
 
     func refresh(token: String) async {
-        if loading { return }
+        await dedupe { await self.performRefresh(token: token) }
+    }
+
+    private func performRefresh(token: String) async {
         loading = true
         defer { loading = false }
 
