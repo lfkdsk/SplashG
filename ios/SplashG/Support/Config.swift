@@ -30,4 +30,15 @@ enum Config {
     static var demoTab: String? {
         ProcessInfo.processInfo.environment["SPLASHG_DEMO_TAB"]
     }
+
+    /// Jump straight to a screen after the demo gallery loads:
+    /// "album" | "detail" | "search" | "downloads" | "wallpaper".
+    static var demoScreen: String? {
+        ProcessInfo.processInfo.environment["SPLASHG_DEMO_SCREEN"]
+    }
+
+    /// Prefill the search field (demo screenshots).
+    static var demoQuery: String? {
+        ProcessInfo.processInfo.environment["SPLASHG_DEMO_QUERY"]
+    }
 }

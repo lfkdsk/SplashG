@@ -4,6 +4,20 @@ Browse your [album_template](https://github.com/lfkdsk/album_template) photo gal
 your own repos plus a feed of friends you follow. MyerSplash-style UI: dark theme, waterfall
 grid, floating pill tab bar.
 
+## Screenshots
+
+| Feed | Collections | Album |
+|---|---|---|
+| ![Feed](docs/screenshots/feed.png) | ![Collections](docs/screenshots/collections.png) | ![Album](docs/screenshots/album.png) |
+
+| Photo | Random | Search |
+|---|---|---|
+| ![Photo](docs/screenshots/photo.png) | ![Random](docs/screenshots/random.png) | ![Search](docs/screenshots/search.png) |
+
+| Downloads | Wallpaper | Sign in |
+|---|---|---|
+| ![Downloads](docs/screenshots/downloads.png) | ![Wallpaper](docs/screenshots/wallpaper.png) | ![Sign in](docs/screenshots/login.png) |
+
 ```
 iOS app (SwiftUI)                 splashg-data (CF Worker + D1)
  ├─ GitHub OAuth ──────────────►  auth.lfkdsk.org (lfkdsk-auth broker)
@@ -132,6 +146,16 @@ SPM dependency, copy the refreshed resolved file back out:
 - **Search** — filter albums/photos, or look up a GitHub login to follow.
 - **Profile** — bind/unbind gallery repos (picker over your GitHub repos or manual `owner/name`),
   manage follows, sign out.
+- **Downloads** — the ↓ on any card saves the full-res file into the app's own library
+  (header entry); from there the wallpaper flow previews it lock-screen style and hands
+  off via Save to Photos (iOS offers no direct set-wallpaper API).
+- **Onboarding** — first sign-in with no bindings walks you through picking gallery repos.
+
+Dev/demo escape hatches (no sign-in, public repos only):
+`SPLASHG_DEMO_REPO=owner/name` browses a gallery unauthenticated;
+`SPLASHG_DEMO_TAB=feed|random|collections` and
+`SPLASHG_DEMO_SCREEN=album|detail|search|downloads|wallpaper` (+`SPLASHG_DEMO_QUERY=…`)
+jump straight to a screen — that's how the screenshots above are captured.
 
 Notes:
 

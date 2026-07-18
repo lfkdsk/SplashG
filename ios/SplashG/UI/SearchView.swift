@@ -8,7 +8,7 @@ struct SearchView: View {
 
     var onPhotoTap: ([Photo], Int) -> Void
 
-    @State private var query = ""
+    @State private var query = Config.demoQuery ?? ""
     @State private var lookedUpUser: UserProfile?
     @State private var lookingUp = false
     @State private var lookupError: String?

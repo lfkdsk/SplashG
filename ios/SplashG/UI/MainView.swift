@@ -25,6 +25,9 @@ struct PhotoDetailContext: Identifiable {
 struct MainView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var store: GalleryStore
+    @EnvironmentObject private var downloads: DownloadManager
+
+    @State private var path = NavigationPath()
 
     @State private var tab: MainTab = Config.demoTab.flatMap { name in
         MainTab.allCases.first { $0.rawValue.lowercased() == name.lowercased() }
@@ -35,7 +38,7 @@ struct MainView: View {
     @State private var detail: PhotoDetailContext?
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 header
                 content
@@ -66,9 +69,33 @@ struct MainView: View {
         .task {
             if let demo = Config.demoRepo {
                 await store.refreshDemo(repo: demo)
+                await applyDemoScreen()
             } else if let token = auth.token {
                 await store.refreshIfStale(token: token)
             }
+        }
+    }
+
+    /// Demo-mode deep links so any screen can be captured headlessly.
+    @MainActor
+    private func applyDemoScreen() async {
+        guard let screen = Config.demoScreen else { return }
+        switch screen {
+        case "album":
+            if let album = store.albums.first { path.append(album) }
+        case "detail":
+            if let album = store.albums.first, !album.photos.isEmpty {
+                detail = PhotoDetailContext(photos: album.photos, index: 0)
+            }
+        case "search":
+            showSearch = true
+        case "downloads", "wallpaper":
+            for photo in store.feedPhotos.prefix(4) {
+                try? await downloads.download(photo)
+            }
+            showDownloads = true
+        default:
+            break
         }
     }
 

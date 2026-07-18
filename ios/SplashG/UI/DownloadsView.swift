@@ -51,6 +51,11 @@ struct DownloadsView: View {
             .fullScreenCover(item: $selected) { item in
                 WallpaperPreviewView(item: item)
             }
+            .task {
+                if Config.demoScreen == "wallpaper", selected == nil {
+                    selected = downloads.items.first
+                }
+            }
         }
     }
 
