@@ -7,6 +7,7 @@ struct PhotoDetailView: View {
     @State private var index: Int
     @State private var failed = false
     @State private var dragOffset: CGFloat = 0
+    @State private var isZoomed = false
     @EnvironmentObject private var downloads: DownloadManager
     @Environment(\.dismiss) private var dismiss
 
@@ -30,18 +31,7 @@ struct PhotoDetailView: View {
 
             TabView(selection: $index) {
                 ForEach(Array(photos.enumerated()), id: \.element.id) { i, photo in
-                    KFImage(photo.fullURL)
-                        .alternativeSources(photo.backupFullURL.map { [.network($0)] } ?? [])
-                        .placeholder {
-                            KFImage(photo.thumbURL)
-                                .resizable()
-                                .scaledToFit()
-                                .overlay(ProgressView())
-                        }
-                        .retry(maxCount: 2, interval: .seconds(1))
-                        .fade(duration: 0.2)
-                        .resizable()
-                        .scaledToFit()
+                    ZoomableImageView(photo: photo, isZoomed: $isZoomed)
                         .tag(i)
                 }
             }
@@ -56,12 +46,14 @@ struct PhotoDetailView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 15)
                 .onChanged { value in
+                    guard !isZoomed else { return }
                     let t = value.translation
                     if dragOffset > 0 || (t.height > 0 && abs(t.height) > abs(t.width)) {
                         dragOffset = max(0, t.height)
                     }
                 }
                 .onEnded { value in
+                    guard !isZoomed else { return }
                     if dragOffset > 140 || value.predictedEndTranslation.height > 320 {
                         dismiss()
                     } else {
@@ -89,7 +81,10 @@ struct PhotoDetailView: View {
             bottomBar
                 .opacity(1 - Double(dragProgress) * 2)
         }
-        .onChange(of: index) { failed = false }
+        .onChange(of: index) {
+            failed = false
+            isZoomed = false
+        }
         .statusBarHidden()
     }
 
